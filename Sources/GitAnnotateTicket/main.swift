@@ -1,0 +1,3 @@
+import GitAnnotateTicketKit
+
+runAnnotator()
