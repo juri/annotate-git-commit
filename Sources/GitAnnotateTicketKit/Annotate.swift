@@ -34,7 +34,7 @@ func extractFirstMatch(of regexp: NSRegularExpression, in string: String) -> Str
     return String(string[range])
 }
 
-func makeTicketReader(branchReader: @escaping () throws -> String) -> (NSRegularExpression) throws -> String? {
+func makeTicketReader(branchReader: @escaping () throws -> String) -> (NSRegularExpression) throws -> String {
     return { regexp in
         let branch = try branchReader()
         guard let ticket = extractFirstMatch(of: regexp, in: branch) else {
@@ -46,14 +46,11 @@ func makeTicketReader(branchReader: @escaping () throws -> String) -> (NSRegular
 
 func makeMessageUpdater(
     regexp: NSRegularExpression,
-    ticketReader: @escaping (NSRegularExpression) throws -> String?) -> (String) throws -> String
+    ticketReader: @escaping (NSRegularExpression) throws -> String) -> (String) throws -> String
 {
     return { message in
         guard !messageHasTicket(message) else { return message }
-        guard let ticket = try ticketReader(regexp) else {
-            throw AnnotatorError(message: "Couldn't match ticket name in branch")
-        }
-
+        let ticket = try ticketReader(regexp)
         let messageWithTicket = message + (message.hasSuffix("\n\n") ? "" : "\n") + ticketPrefix + ticket + "\n"
         return messageWithTicket
     }
