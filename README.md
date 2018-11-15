@@ -16,7 +16,7 @@ When you type `git commit` in the repository and your branch name is `feature/ch
 
 ## Installation
 
-`annotate-git-commit` is built in [Swift] 4.1. It has been tested on a Mac (running macOS 10.14.1), but it should work fine on Linux too.
+`annotate-git-commit` is built in [Swift] 4.2. It has been tested on a Mac (running macOS 10.14.1), but it should work fine on Linux too.
 
 To install it, clone the repository and in the repository root run:
 
