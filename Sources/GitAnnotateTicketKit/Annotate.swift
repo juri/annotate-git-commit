@@ -7,12 +7,28 @@ struct AnnotatorError: Error {
     let message: String
 }
 
+struct QuietError: Error {}
+
 extension AnnotatorError: CustomStringConvertible {
     var description: String {
         return self.message
     }
 }
 
+enum ErrorHandling {
+    case abort
+    case omit
+    case placeholder(String)
+
+    static func fromFlags(abort: Flag, omit: Flag, placeholder: Key<String>) -> ErrorHandling {
+        if let message = placeholder.value {
+            return .placeholder(message)
+        } else if abort.value {
+            return .abort
+        }
+        return .omit
+    }
+}
 
 func messageHasTicket(_ message: String) -> Bool {
     return message.split(separator: "\n").first(where: { $0.hasPrefix(ticketPrefix) }) != nil
@@ -34,13 +50,24 @@ func extractFirstMatch(of regexp: NSRegularExpression, in string: String) -> Str
     return String(string[range])
 }
 
-func makeTicketReader(branchReader: @escaping () throws -> String) -> (NSRegularExpression) throws -> String {
+func makeTicketReader(
+    errorHandling: ErrorHandling,
+    branchReader: @escaping () throws -> String) -> (NSRegularExpression) throws -> String
+{
     return { regexp in
-        let branch = try branchReader()
-        guard let ticket = extractFirstMatch(of: regexp, in: branch) else {
-            throw AnnotatorError(message: "Couldn't find ticket in branch '\(branch)' with regexp '\(regexp.pattern)'")
+        do {
+            let branch = try branchReader()
+            guard let ticket = extractFirstMatch(of: regexp, in: branch) else {
+                throw AnnotatorError(message: "Couldn't find ticket in branch '\(branch)' with regexp '\(regexp.pattern)'")
+            }
+            return ticket
+        } catch {
+            switch errorHandling {
+            case .abort: throw error
+            case .omit: throw QuietError()
+            case .placeholder(let placeholder): return placeholder
+            }
         }
-        return ticket
     }
 }
 
@@ -77,13 +104,28 @@ class AddTicket: Command {
     let name = "add-ticket"
     let rawRegexp = Parameter()
     let file = Parameter()
+    let abortOnError = Flag(
+        "-a", "--abort", description: "Abort execution on ticket parse error with a message and error status")
+    let omitOnError = Flag("-o", "--omit", description: "Omit ticket line on ticket parse error (default)")
+    let placeholderOnError = Key<String>("-p", "--placeholder", description: "Use placeholder on ticket parse error")
+
+    var optionGroups: [OptionGroup] {
+        let errorHandling = OptionGroup.atMostOne(self.omitOnError, self.abortOnError, self.placeholderOnError)
+        return [errorHandling]
+    }
 
     func execute() throws {
-        try updateFile(
-            at: URL(fileURLWithPath: file.value, isDirectory: false),
-            with: makeMessageUpdater(
-                regexp: try parseRegexp(raw: rawRegexp.value),
-                ticketReader: makeTicketReader(branchReader: readBranch)))
+        let errorHandling = ErrorHandling.fromFlags(
+            abort: abortOnError, omit: omitOnError, placeholder: placeholderOnError)
+        do {
+            try updateFile(
+                at: URL(fileURLWithPath: file.value, isDirectory: false),
+                with: makeMessageUpdater(
+                    regexp: try parseRegexp(raw: rawRegexp.value),
+                    ticketReader: makeTicketReader(
+                        errorHandling: errorHandling,
+                        branchReader: readBranch)))
+        } catch is QuietError {}
     }
 }
 
