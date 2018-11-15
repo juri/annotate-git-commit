@@ -25,6 +25,14 @@ swift build -c release -Xswiftc -static-stdlib
 cp ./.build/x86_64-apple-macosx10.10/release/annotate-git-commit /usr/local/bin
 ```
 
+### mint
+
+You can also install it with [mint]:
+
+```sh
+mint install juri/annotate-git-commit
+```
+
 ## Error handling
 
 `annotate-git-commit` will exit with a status code in case of an IO error or failed regular expression parsing. You can choose how it behaves in case of failed ticket name parsing (i.e. invalid branch name or failed git execution.)
@@ -36,3 +44,4 @@ The default is to omit the ticket information from the commit but to exit succes
 
 [ClubHouse]: https://clubhouse.io
 [Swift]: https://swift.org
+[mint]: https://github.com/yonaskolb/mint
