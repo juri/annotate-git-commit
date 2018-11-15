@@ -19,7 +19,7 @@ class MessageUpdaterTests: XCTestCase {
             ticketReader: makeTicketReader(
                 errorHandling: .abort,
                 branchReader: { matchingBranch }))
-        XCTAssertEqual(try messageUpdater(""), "\nTicket: ch1234\n")
+        XCTAssertEqual(try messageUpdater(""), "Ticket: ch1234\n")
     }
 
     func testUpdateNonEmpty() throws {
@@ -64,7 +64,7 @@ class MessageUpdaterTests: XCTestCase {
             ticketReader: makeTicketReader(
                 errorHandling: .placeholder("No ticket"),
                 branchReader: { nonMatchingBranch }))
-        XCTAssertEqual(try messageUpdater("hello"), "hello\nTicket: No ticket\n")
+        XCTAssertEqual(try messageUpdater("hello"), "hello\n\nTicket: No ticket\n")
     }
 
     static var allTests = [

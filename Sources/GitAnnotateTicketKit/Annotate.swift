@@ -78,7 +78,8 @@ func makeMessageUpdater(
     return { message in
         guard !messageHasTicket(message) else { return message }
         let ticket = try ticketReader(regexp)
-        let messageWithTicket = message + (message.hasSuffix("\n\n") ? "" : "\n") + ticketPrefix + ticket + "\n"
+        let newlines = message.count > 2 ? message.reversed().prefix(while: { $0 == "\n" }).count : Int.max
+        let messageWithTicket = message + (String(repeating: "\n", count: max(0, 2 - newlines))) + ticketPrefix + ticket + "\n"
         return messageWithTicket
     }
 }
