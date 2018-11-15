@@ -2,6 +2,8 @@
 
 `annotate-git-commit` adds ticket identifier parsed from branch name to Git commit messages.
 
+![Demonstration animation](anim.png)
+
 If you include ticket identifier in a regularly parseable format in your ticket names, you can add a call to `annotate-git-commit` in your `prepare-commit-msg` git hook and it will add the parsed ticket identifier to your commit messages.
 
 Here's an example of a `.git/hooks/prepare-commit-msg` script that parses [ClubHouse] identifiers:
