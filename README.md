@@ -33,6 +33,20 @@ You can also install it with [mint]:
 mint install juri/annotate-git-commit
 ```
 
+## Usage
+
+Running `annotate-git-commit --help` outputs a list of subcommands. Run `annotate-git-commit COMMAND --help` to get help on a command.
+
+`annotate-git-commit` uses [ICU regular expressions]. To test a regexp against a branch name, use `annotate-git-commit test-regexp`.
+
+Once you have a good regexp for your repository, add the following as `.git/hooks/prepare-commit-msg`:
+
+```sh
+annotate-git-commit add-ticket 'REGEXP' "$1"
+```
+
+with `REGEXP` replaced with your regular expression.
+
 ## Error handling
 
 `annotate-git-commit` will exit with a status code in case of an IO error or failed regular expression parsing. You can choose how it behaves in case of failed ticket name parsing (i.e. invalid branch name or failed git execution.)
@@ -45,3 +59,4 @@ The default is to omit the ticket information from the commit but to exit succes
 [ClubHouse]: https://clubhouse.io
 [Swift]: https://swift.org
 [mint]: https://github.com/yonaskolb/mint
+[ICU regular expressions]: http://userguide.icu-project.org/strings/regexp
