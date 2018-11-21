@@ -132,9 +132,40 @@ class AddTicket: Command {
     }
 }
 
+class TestRegexp: Command {
+    let name = "test-regexp"
+    let shortDescription = "Test regular expression against a branch name"
+    let longDescription = """
+    Outputs what add-ticket would determine to be the ticket name given a
+    regexp and a branch name.
+
+    A non-matching branch name will cause an error with test-regexp. When
+    using add-ticket, errors by default will only cause the branch name to
+    be omitted from the commit message.
+
+    Parameters:
+        - regexp:     A regular expression. It must contain a capture
+                      group, i.e. a part surrounded by parentheses.
+        - branchName: A branch name to test against. It doesn't have to
+                      exist in your repo. It's only used for text
+                      matching.
+    """
+
+    let regexp = Parameter()
+    let branchName = Parameter()
+
+    func execute() throws {
+        let compiledRegexp = try parseRegexp(raw: self.regexp.value)
+        let ticketReader = makeTicketReader(errorHandling: .abort, branchReader: { self.branchName.value })
+        let ticket = try ticketReader(compiledRegexp)
+        stdout <<< "Ticket: \(ticket)"
+    }
+}
+
+
 public func runAnnotator() {
     let argv = ProcessInfo.processInfo.arguments
     let annotator = CLI(name: argv[0])
-    annotator.commands = [AddTicket()]
+    annotator.commands = [AddTicket(), TestRegexp()]
     exit(annotator.go())
 }
