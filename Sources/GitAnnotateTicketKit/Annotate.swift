@@ -103,6 +103,8 @@ func parseRegexp(raw: String) throws -> NSRegularExpression {
 
 class AddTicket: Command {
     let name = "add-ticket"
+    let shortDescription = "Add ticket information from branch to commit"
+
     let rawRegexp = Parameter()
     let file = Parameter()
     let abortOnError = Flag(
