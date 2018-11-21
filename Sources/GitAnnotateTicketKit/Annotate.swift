@@ -119,12 +119,12 @@ class AddTicket: Command {
 
     func execute() throws {
         let errorHandling = ErrorHandling.fromFlags(
-            abort: abortOnError, omit: omitOnError, placeholder: placeholderOnError)
+            abort: self.abortOnError, omit: self.omitOnError, placeholder: self.placeholderOnError)
         do {
             try updateFile(
-                at: URL(fileURLWithPath: file.value, isDirectory: false),
+                at: URL(fileURLWithPath: self.file.value, isDirectory: false),
                 with: makeMessageUpdater(
-                    regexp: try parseRegexp(raw: rawRegexp.value),
+                    regexp: try parseRegexp(raw: self.rawRegexp.value),
                     ticketReader: makeTicketReader(
                         errorHandling: errorHandling,
                         branchReader: readBranch)))
