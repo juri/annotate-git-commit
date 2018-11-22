@@ -104,8 +104,22 @@ func parseRegexp(raw: String) throws -> NSRegularExpression {
 class AddTicket: Command {
     let name = "add-ticket"
     let shortDescription = "Add ticket information from branch to commit"
+    let longDescription = """
+    Tries to parse ticket information from the current git branch using
+    regexp and tries to add it to file if it isn't already there.
 
-    let rawRegexp = Parameter()
+    You should probably be running this from .git/hooks/prepare-commit-msg.
+
+    This subcommand takes two positional parameters:
+    - regexp: A regular expression for extracting a ticket identifier
+              from a branch name. You can test your regexp with the
+              test-regexp subcommand.
+    - file:   A file to edit. This is the file containing the commit
+              message. It's the first parameter passed to the
+              prepare-commit-msg hook.
+    """
+
+    let regexp = Parameter()
     let file = Parameter()
     let abortOnError = Flag(
         "-a", "--abort", description: "Abort execution on ticket parse error with a message and error status")
@@ -124,7 +138,7 @@ class AddTicket: Command {
             try updateFile(
                 at: URL(fileURLWithPath: self.file.value, isDirectory: false),
                 with: makeMessageUpdater(
-                    regexp: try parseRegexp(raw: self.rawRegexp.value),
+                    regexp: try parseRegexp(raw: self.regexp.value),
                     ticketReader: makeTicketReader(
                         errorHandling: errorHandling,
                         branchReader: readBranch)))
@@ -143,7 +157,7 @@ class TestRegexp: Command {
     using add-ticket, errors by default will only cause the branch name to
     be omitted from the commit message.
 
-    Parameters:
+    Positional parameters:
         - regexp:     A regular expression. It must contain a capture
                       group, i.e. a part surrounded by parentheses.
         - branchName: A branch name to test against. It doesn't have to
